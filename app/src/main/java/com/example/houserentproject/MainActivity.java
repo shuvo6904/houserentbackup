@@ -233,6 +233,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (item.getItemId() == R.id.accountVeriMenuId){
             startActivity(new Intent(this, AccountVerification.class));
+            //finish();
+        }
+
+        if (item.getItemId() == R.id.myPostMenuId){
+            startActivity(new Intent(this, MyPosts.class));
+            //finish();
         }
 
         return false;
