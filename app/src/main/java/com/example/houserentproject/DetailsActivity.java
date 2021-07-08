@@ -25,6 +25,9 @@ public class DetailsActivity extends AppCompatActivity {
     ImageView homeImage;
     private FirebaseAuth mAuth;
     private String currentUserId;
+    private HomePageData model;
+    private CheckBox checkBoxFavourite;
+    private Session session;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +35,7 @@ public class DetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_details);
 
         getUserId();
+        session = new Session(this);
 
         rentedAmount = findViewById(R.id.rentedAmountId);
         homeLocation = (TextView) findViewById(R.id.homeLocationId);
@@ -48,7 +52,7 @@ public class DetailsActivity extends AppCompatActivity {
 
         //Bundle mBundle = getIntent().getExtras();
 
-        HomePageData model = (HomePageData) getIntent().getSerializableExtra("model");
+        model = (HomePageData) getIntent().getSerializableExtra("model");
 
         if (model != null){
 
@@ -88,15 +92,25 @@ public class DetailsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-
-        CheckBox checkBoxFavourite;
         checkBoxFavourite = findViewById(R.id.checkboxFavourite);
-        checkBoxFavourite.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                favouritePost(model, isChecked);
-            }
-        });
+        checkBoxFavourite.setOnCheckedChangeListener(favListener);
+
+        setFavourite();
+    }
+
+    CompoundButton.OnCheckedChangeListener favListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            favouritePost(model, isChecked);
+        }
+    };
+
+    private void setFavourite() {
+        if (session.isFavourite(model.getId())) {
+            checkBoxFavourite.setOnCheckedChangeListener (null);
+            checkBoxFavourite.setChecked(true);
+            checkBoxFavourite.setOnCheckedChangeListener (favListener);
+        }
     }
 
     private void getUserId() {
@@ -112,6 +126,7 @@ public class DetailsActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()){
+                                session.addToFavourite(model.getId());
                                 Toast.makeText(DetailsActivity.this, "Favourite", Toast.LENGTH_SHORT).show();
                             }
                         }
@@ -123,6 +138,7 @@ public class DetailsActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()){
+                                session.removeFromFavourite(model.getId());
                                 Toast.makeText(DetailsActivity.this, "Removed from favourite", Toast.LENGTH_SHORT).show();
                             }
                         }
