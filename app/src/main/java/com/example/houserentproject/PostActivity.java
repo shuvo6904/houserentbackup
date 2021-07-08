@@ -27,6 +27,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -39,6 +40,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Objects;
 
 public class PostActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
 
@@ -60,6 +62,8 @@ public class PostActivity extends AppCompatActivity implements DatePickerDialog.
 
     String userId, userName, userPhnNumber;
 
+    private DatabaseReference rootRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +72,9 @@ public class PostActivity extends AppCompatActivity implements DatePickerDialog.
         fAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
 
-        userId = fAuth.getCurrentUser().getUid();
+        userId = Objects.requireNonNull(fAuth.getCurrentUser()).getUid();
+        rootRef = FirebaseDatabase.getInstance().getReference();
+
 
         locationSpinnerArray = getResources().getStringArray(R.array.location_spinner);
         locationSpinner = (Spinner) findViewById(R.id.locationSpinnerId);
@@ -205,6 +211,8 @@ public class PostActivity extends AppCompatActivity implements DatePickerDialog.
 
     public void submitData(){
 
+        String myCurrentDateTime = DateFormat.getDateTimeInstance()
+                .format(Calendar.getInstance().getTime());
 
         HomePageData homePageData = new HomePageData(
                 txtRentedAmount.getText().toString(),
@@ -217,31 +225,31 @@ public class PostActivity extends AppCompatActivity implements DatePickerDialog.
                 rentTypeChip.getText().toString(),
                 datePicker.getText().toString(),
                 userName,
-                userPhnNumber
+                userPhnNumber,
+                myCurrentDateTime
 
         );
 
-        String myCurrentDateTime = DateFormat.getDateTimeInstance()
-                .format(Calendar.getInstance().getTime());
 
-        FirebaseDatabase.getInstance().getReference("Data")
-                .child(userId).child(myCurrentDateTime).setValue(homePageData).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
+        rootRef.child("Data")
+                .child(userId)
+                .child(myCurrentDateTime).setValue(homePageData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
 
-                if (task.isSuccessful()){
-                    Toast.makeText(PostActivity.this, "Data Uploaded",Toast.LENGTH_SHORT).show();
-                    finish();
+                        if (task.isSuccessful()){
+                            Toast.makeText(PostActivity.this, "Data Uploaded",Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
                 }
 
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
 
-                Toast.makeText(PostActivity.this, e.getMessage().toString(),Toast.LENGTH_SHORT).show();
-            }
-        });
+                        Toast.makeText(PostActivity.this, e.getMessage().toString(),Toast.LENGTH_SHORT).show();
+                    }
+                });
 
 
     }

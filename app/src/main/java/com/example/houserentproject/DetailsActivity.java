@@ -1,22 +1,37 @@
 package com.example.houserentproject;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.Objects;
 
 public class DetailsActivity extends AppCompatActivity {
 
     TextView rentedAmount , homeLocation, buildingName, floorNumber, detailsAddress , genderValue, rentTypeValue, rentDate, postedBy;
     ImageView homeImage;
+    private FirebaseAuth mAuth;
+    private String currentUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+
+        getUserId();
 
         rentedAmount = findViewById(R.id.rentedAmountId);
         homeLocation = (TextView) findViewById(R.id.homeLocationId);
@@ -72,5 +87,48 @@ public class DetailsActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+
+        CheckBox checkBoxFavourite;
+        checkBoxFavourite = findViewById(R.id.checkboxFavourite);
+        checkBoxFavourite.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                favouritePost(model, isChecked);
+            }
+        });
+    }
+
+    private void getUserId() {
+        mAuth = FirebaseAuth.getInstance();
+        currentUserId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
+    }
+
+    private void favouritePost(HomePageData model,boolean isChecked) {
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        if (isChecked){
+            rootRef.child("favourite").child(currentUserId).child(model.getId()).setValue(model)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()){
+                                Toast.makeText(DetailsActivity.this, "Favourite", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+        }
+        else {
+            rootRef.child("favourite").child(currentUserId).child(model.getId()).removeValue()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()){
+                                Toast.makeText(DetailsActivity.this, "Removed from favourite", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+        }
+
+
     }
 }

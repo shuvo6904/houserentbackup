@@ -14,13 +14,14 @@ public class HomePageData implements Serializable {
     private String datePick;
     private String nameOfUser;
     private String phnNumOfUser;
+    private String id;
 
 
     public HomePageData() {
 
     }
 
-    public HomePageData(String rentAmount, String location, String image, String buildingName, String floorNumber, String detailsAddress, String valueOfGender, String valueOfRentType, String datePick, String nameOfUser, String phnNumOfUser) {
+    public HomePageData(String rentAmount, String location, String image, String buildingName, String floorNumber, String detailsAddress, String valueOfGender, String valueOfRentType, String datePick, String nameOfUser, String phnNumOfUser,String id) {
         this.rentAmount = rentAmount;
         this.location = location;
         this.image = image;
@@ -32,6 +33,11 @@ public class HomePageData implements Serializable {
         this.datePick = datePick;
         this.nameOfUser = nameOfUser;
         this.phnNumOfUser = phnNumOfUser;
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getRentAmount() {
